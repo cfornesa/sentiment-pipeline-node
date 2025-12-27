@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingestion Agent | Sentiment Pipeline</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* DESIGN PHILOSOPHY: Institutional Cleanliness 
+           Focus on high-contrast typography and clear visual hierarchy.
+        */
+        body { 
+            background: #f8fafc; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            padding: 15px; 
+            color: #0f172a; 
+            line-height: 1.5;
+        }
+        .sw-container { 
+            max-width: 500px; 
+            margin: 40px auto; 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+        }
+
+        .sw-header { border-bottom: 2px solid #05386B; margin-bottom: 25px; padding-bottom: 12px; }
+        .sw-title { margin: 0; color: #05386B; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.025em; }
+        .sw-tagline { font-size: 12px; color: #64748b; margin-top: 6px; font-weight: 500; }
+
+        .sw-label { font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px; display: block; letter-spacing: 0.05em; }
+        .sw-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 18px; box-sizing: border-box; font-size: 14px; transition: border-color 0.2s; }
+        .sw-input:focus { outline: none; border-color: #05386B; background: #fdfdfd; }
+
+        /* GRID SYSTEM: For side-by-side data column identification */
+        .sw-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+
+        /* MOBILE ADAPTATION: Stack columns on small screens */
+        @media (max-width: 480px) {
+            .sw-grid { 
+                grid-template-columns: 1fr; 
+                gap: 0; 
+            }
+        }
+
+        .btn { background: #05386B; color: white; padding: 14px; border: none; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 14px; transition: transform 0.1s, background 0.2s; }
+        .btn:hover { background: #042b52; }
+        .btn:active { transform: scale(0.98); }
+
+        /* PRIVACY GATEKEEPER: Ensures ethical compliance before ingestion */
+        .privacy-block { 
+            background: #f1f5f9; 
+            padding: 14px; 
+            border-radius: 8px; 
+            margin: 5px 0 25px 0; 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 12px; 
+            border-left: 4px solid #05386B; 
+        }
+        .privacy-text { font-size: 11px; color: #334155; line-height: 1.6; cursor: pointer; user-select: none; }
+        .privacy-text strong { color: #05386B; }
+
+        /* RESULT AREA: Displays aggregates and deep-link embed code */
+        .result-area { display: none; margin-top: 25px; animation: fadeIn 0.4s ease-out; }
+        .copy-group { display: flex; gap: 8px; margin-bottom: 25px; }
+        .copy-input { flex-grow: 1; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #334155; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="sw-container">
+    <header class="sw-header">
+        <h1 class="sw-title">Sovereign Engine</h1>
+        <p class="sw-tagline">Sentiment Pipeline :: Secure Narrative Analysis</p>
+    </header>
+
+    <form id="ingestForm">
+        <label class="sw-label">Research Dataset (CSV File)</label>
+        <input type="file" id="csv_file" name="csv_file" accept=".csv" required style="margin-bottom:20px; font-size: 13px;">
+
+        <label class="sw-label">Project Identifier / Chart Title</label>
+        <input type="text" id="chart_title" name="chart_title" class="sw-input" placeholder="e.g. Community Feedback Analysis 2025" required>
+
+        <div class="sw-grid">
+            <div>
+                <label class="sw-label">Content Column (Text)</label>
+                <input type="text" id="post_column" name="post_column" class="sw-input" value="post" required>
+            </div>
+            <div>
+                <label class="sw-label">Temporal Column (Date)</label>
+                <input type="text" id="date_column" name="date_column" class="sw-input" value="date">
+            </div>
+        </div>
+
+        <div class="privacy-block">
+            <input type="checkbox" id="privacyConsent" required>
+            <label for="privacyConsent" class="privacy-text">
+                <strong>Sovereign Consent:</strong> I verify that only binned aggregates will be stored. No raw PII or research text is retained on the sovereign server after processing.
+            </label>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn">Initialize Sovereign Analysis</button>
+    </form>
+
+    <section id="resultArea" class="result-area">
+        <h3 style="font-size: 15px; color: #059669; margin-top:0; display:flex; align-items:center; gap:8px;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Analysis Complete
+        </h3>
+
+        <label class="sw-label">Institutional Embed Code (Deep Link)</label>
+        <div class="copy-group">
+            <input type="text" id="embedCode" class="copy-input" readonly>
+            <button onclick="copyEmbed()" style="background:#059669; color:white; border:none; padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:11px;">COPY</button>
+        </div>
+
+        <div style="height:250px; position: relative;"><canvas id="resultChart"></canvas></div>
+
+        <button onclick="location.reload()" class="btn" style="background:#64748b; margin-top:25px;">Process New Dataset</button>
+    </section>
+</div>
+
+<script>
+    /**
+     * ARCHITECTURAL LOGIC: Sovereign UI Handler
+     * Communicates with: /api/sentiment-pipeline/
+     */
+    const ingestForm = document.getElementById('ingestForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultArea = document.getElementById('resultArea');
+    let activeChart = null;
+
+    ingestForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('csv_file', document.getElementById('csv_file').files[0]);
+        formData.append('chart_title', document.getElementById('chart_title').value);
+        formData.append('post_column', document.getElementById('post_column').value);
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing Engine...";
+
+        try {
+            // TRANSMISSION: Targeting the modular API endpoint
+            const response = await fetch('/api/sentiment-pipeline/ingest', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // UI TRANSITION
+                ingestForm.style.display = 'none';
+                resultArea.style.display = 'block';
+
+                /**
+                 * LOGIC: DEEP-LINK GENERATION
+                 * Detects origin (Replit/Hostinger) and points to the nested display agent.
+                 */
+                const origin = window.location.origin;
+                const embedUrl = `${origin}/sentiment-pipeline/display.html?id=${data.id}`;
+
+                document.getElementById('embedCode').value = `<iframe src="${embedUrl}" width="100%" height="400" frameborder="0" allowtransparency="true"></iframe>`;
+
+                renderChart(data.bins);
+            } else {
+                throw new Error(data.error || "Ingestion Failed");
+            }
+        } catch (err) {
+            console.error("Pipeline Error:", err);
+            alert("Sovereign Engine Error: " + err.message);
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Initialize Sovereign Analysis";
+        }
+    });
+
+    /**
+     * Renders the VADER Polarity Distribution for user validation.
+     */
+    function renderChart(bins) {
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        if (activeChart) activeChart.destroy();
+
+        activeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["-1.0", "-0.8", "-0.6", "-0.4", "-0.2", "0", "0.2", "0.4", "0.6", "0.8", "1.0"],
+                datasets: [{ 
+                    data: bins, 
+                    backgroundColor: '#05386B',
+                    borderRadius: 4
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    /**
+     * Institutional Clipboard Handler
+     */
+    function copyEmbed() {
+        const copyText = document.getElementById("embedCode");
+        copyText.select();
+        document.execCommand("copy");
+
+        // Simple visual confirmation
+        const copyBtn = document.querySelector('.copy-group button');
+        const originalText = copyBtn.innerText;
+        copyBtn.innerText = "COPIED!";
+        setTimeout(() => copyBtn.innerText = originalText, 2000);
+    }
+</script>
+
+</body>
+</html>

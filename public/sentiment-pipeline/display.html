@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sovereign Chart Agent</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; background: transparent; font-family: sans-serif; }
+        #chartWrapper { height: 380px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="chartWrapper"><canvas id="displayChart"></canvas></div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    async function loadChart() {
+        try {
+            // CALLING THE MODULAR API PATH
+            const response = await fetch(`/api/sentiment-pipeline/display/${id}`);
+            const data = await response.json();
+
+            const bins = [data.bin_n1_0, data.bin_n0_8, data.bin_n0_6, data.bin_n0_4, data.bin_n0_2, data.bin_0_0, data.bin_p0_2, data.bin_p0_4, data.bin_p0_6, data.bin_p0_8, data.bin_p1_0];
+
+            new Chart(document.getElementById('displayChart'), {
+                type: 'bar',
+                data: {
+                    labels: ["-1.0", "-0.8", "-0.6", "-0.4", "-0.2", "0", "0.2", "0.4", "0.6", "0.8", "1.0"],
+                    datasets: [{ label: data.project_title, data: bins, backgroundColor: '#05386B' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        } catch (err) { console.error("Agent Error:", err); }
+    }
+    if (id) loadChart();
+</script>
+</body>
+</html>

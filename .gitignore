@@ -57,6 +57,7 @@ dist
 .env.development.local
 .env.test.local
 .env.production.local
+.env (Hostinger)
 
 # PRIVACY: Never sync raw research data uploaded by users
 # This targets the folder used by Multer in app.js
