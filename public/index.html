@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Engine Hub | Node.js Architecture</title>
+
+    <style>
+        /* 1. DESIGN SYSTEM VARIABLES 
+           Matches the PHP Tools subdomain for brand and institutional consistency.
+        */
+        :root { 
+            --navy: #05386B; 
+            --teal: #379683; 
+            --slate: #64748b; 
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* 2. CORE LAYOUT 
+           Uses Flexbox to ensure the dashboard remains centered regardless of viewport size.
+        */
+        body { 
+            background: var(--light-bg); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            color: #0f172a;
+        }
+
+        /* 3. COMPONENT ARCHITECTURE */
+        .hub-card { 
+            max-width: 550px; 
+            width: 90%; 
+            background: var(--white); 
+            padding: 40px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+
+        .hub-header { 
+            border-bottom: 2px solid var(--navy); 
+            margin-bottom: 30px; 
+            padding-bottom: 20px; 
+        }
+
+        .hub-title { 
+            color: var(--navy); 
+            margin: 0; 
+            font-size: 26px; 
+            text-transform: uppercase; 
+            font-weight: 800; 
+            letter-spacing: 1.5px; 
+        }
+
+        /* 4. TOOL NAVIGATION GRID */
+        .tool-grid { display: grid; gap: 20px; text-align: left; }
+
+        .tool-link { 
+            display: flex; 
+            align-items: center; 
+            text-decoration: none; 
+            padding: 20px; 
+            background: var(--white); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Hover states demonstrate "Interactive Responsiveness" for UI/UX evaluation */
+        .tool-link:hover { 
+            border-color: var(--teal); 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        .icon-box { 
+            width: 50px; height: 50px; background: #edf5e1; border-radius: 8px; 
+            display: flex; align-items: center; justify-content: center; 
+            margin-right: 20px; color: var(--navy); font-size: 24px;
+        }
+
+        .tool-info h4 { margin: 0; color: var(--navy); font-size: 18px; }
+        .tool-info p { margin: 4px 0 0 0; color: var(--slate); font-size: 13px; line-height: 1.4; }
+
+        .status-badge { 
+            font-size: 9px; 
+            text-transform: uppercase; 
+            font-weight: 800; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            background: #dcfce7; 
+            color: #166534; 
+            margin-left: auto; 
+            letter-spacing: 0.5px;
+        }
+
+        footer { 
+            margin-top: 40px; 
+            font-size: 11px; 
+            color: var(--slate); 
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hub-card">
+    <header class="hub-header">
+        <h1 class="hub-title">Sovereign Engine Hub</h1>
+        <p style="color: var(--slate); font-size: 14px; margin-top: 5px;">Node.js High-Performance Research Stack</p>
+    </header>
+
+    <main class="tool-grid">
+        <a href="/sentiment-pipeline/" class="tool-link" aria-label="Open Sentiment Pipeline">
+            <div class="icon-box">📊</div>
+            <div class="tool-info">
+                <h4>Sentiment Pipeline</h4>
+                <p>Advanced VADER analysis for CSV datasets using Node.js event-driven processing.</p>
+            </div>
+            <span class="status-badge">Engine Online</span>
+        </a>
+
+        <a href="/tanaga-agent/" class="tool-link" aria-label="Open Tanaga Poetic Agent">
+            <div class="icon-box">✒️</div>
+            <div class="tool-info">
+                <h4>Tanaga Poetic Agent</h4>
+                <p>Meter-corrected poetic inference leveraging the Mistral AI engine.</p>
+            </div>
+            <span class="status-badge">Engine Online</span>
+        </a>
+
+        <a href="/contact/" class="tool-link">
+            <div class="icon-box">✉️</div>
+            <div class="tool-info">
+                <h4>Contact Widget</h4>
+                <p>Secure, SMTP-driven communication with anti-spam protection.</p>
+            </div>
+            <span class="status-badge">Live</span>
+        </a>
+    </main>
+
+    <footer>
+        &copy; 2025 Augment Humankind :: Mirror-Stack Architecture v9.6
+    </footer>
+</div>
+
+</body>
+</html>

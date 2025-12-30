@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanaga Agent | Sovereign Engine</title>
+    <style>
+        /* UI DESIGN: Georgia Serif for Poetic Context */
+        body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; padding: 15px; color: #0f172a; }
+
+        #tanaga-container {
+            border: 2px solid #5D5C61;
+            border-radius: 12px;
+            background: #fff;
+            padding: 30px;
+            font-family: 'Georgia', serif; 
+            max-width: 650px;
+            margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        h3 { color: #379683; margin: 0 0 10px 0; border-bottom: 2px solid #EDF5E1; padding-bottom: 10px; font-family: 'Segoe UI', sans-serif; }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 16px;
+            resize: vertical;
+            outline-color: #379683;
+            box-sizing: border-box;
+        }
+
+        /* POETIC RENDERING BLOCK */
+        #tan-result {
+            margin-top: 25px;
+            padding: 25px;
+            background: #fdf6e3; 
+            border-left: 5px solid #379683;
+            display: none;
+            white-space: pre-wrap;
+            font-size: 20px;
+            line-height: 1.8;
+            color: #2c3e50;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-gen { background: #379683; color: white; border: none; padding: 14px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 2; }
+        .btn-clear { background: #fff; color: #5D5C61; border: 1px solid #cbd5e1; padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
+
+        .privacy-block { margin-top: 15px; font-size: 14px; color: #555; display: flex; align-items: flex-start; gap: 10px; font-family: 'Segoe UI', sans-serif; }
+
+        /* MOBILE RESPONSIVITY */
+        @media (max-width: 480px) {
+            #tanaga-container { padding: 20px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="tanaga-container">
+    <h3>Tanaga Poetic Agent</h3>
+
+    <textarea id="tan-input" placeholder="Theme (e.g. 'Homesickness sa Tagalog')..."></textarea>
+
+    <div class="privacy-block">
+        <input type="checkbox" id="tan-privacy-check" style="width: 18px; height: 18px; cursor: pointer;" required>
+        <label for="tan-privacy-check">
+            I verify inputs are redacted and I agree to the <a href="#" style="color: #379683; font-weight: bold;">Privacy Policy</a>.
+        </label>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="getPoem()" id="tan-btn" class="btn-gen">Generate Verse</button>
+        <button onclick="clearPoet()" class="btn-clear">Reset</button>
+    </div>
+
+    <div id="tan-result"></div>
+</div>
+
+<script>
+    /**
+     * SOVEREIGN UI LOGIC: Handles API communication with the Engine.
+     */
+    async function getPoem() {
+        const btn = document.getElementById('tan-btn');
+        const inputField = document.getElementById('tan-input');
+        const input = inputField.value.trim();
+        const consent = document.getElementById('tan-privacy-check').checked;
+        const resultBox = document.getElementById('tan-result');
+
+        if (!input || !consent) { 
+            alert("Please provide a theme and accept the policy."); 
+            return; 
+        }
+
+        btn.innerText = "Auditing Meter...";
+        btn.disabled = true;
+
+        try {
+            // Target the specific Node.js route defined in index.js
+            const response = await fetch('/api/tanaga-agent/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_input: input })
+            });
+
+            const data = await response.json();
+
+            if (data.reply) {
+                resultBox.innerText = data.reply;
+                resultBox.style.display = 'block';
+                resultBox.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                throw new Error(data.error || "Generation failed.");
+            }
+        } catch (e) {
+            alert("Connection failed: " + e.message);
+        } finally {
+            btn.innerText = "Generate Verse";
+            btn.disabled = false;
+        }
+    }
+
+    function clearPoet() {
+        document.getElementById('tan-input').value = '';
+        document.getElementById('tan-result').style.display = 'none';
+        document.getElementById('tan-privacy-check').checked = false;
+    }
+</script>
+
+</body>
+</html>

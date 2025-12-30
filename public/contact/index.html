@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Provisioner | Sovereign Engine</title>
+
+    <style>
+        /**
+         * DESIGN SYSTEM: Sovereign Hub UI
+         * Focus: High-density information, accessibility, and professional aesthetic.
+         */
+        :root { --navy: #05386B; --teal: #379683; --slate: #64748b; --light-bg: #f8fafc; }
+
+        body { 
+            background: var(--light-bg); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+
+        .card { 
+            max-width: 500px; 
+            width: 90%; 
+            background: #fff; 
+            padding: 40px; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+
+        .header { border-bottom: 2px solid var(--navy); margin-bottom: 25px; padding-bottom: 15px; }
+
+        .input-field { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus { border-color: var(--navy); outline: none; }
+
+        .btn { 
+            background: var(--navy); 
+            color: #fff; 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin-top: 10px; 
+            letter-spacing: 0.5px;
+        }
+
+        .info-note { 
+            font-size: 11px; 
+            background: #fffbeb; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            color: #92400e; 
+            text-align: left; 
+            border: 1px solid #fde68a; 
+            line-height: 1.5;
+        }
+
+        #resultSection { display: none; margin-top: 25px; text-align: left; }
+
+        .embed-box { 
+            background: #f1f5f9; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 11px; 
+            border: 1px dashed var(--teal); 
+            word-break: break-all; 
+            line-height: 1.4;
+        }
+
+        .status-msg { 
+            font-weight: 800; 
+            color: var(--teal); 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            display: block; 
+            margin-bottom: 10px; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <header class="header">
+        <h2 style="color: var(--navy); margin: 0;">Contact Provisioner</h2>
+        <p style="color: var(--slate); font-size: 13px; margin: 5px 0 0 0;">Identity-Linked Widget Ingestion</p>
+    </header>
+
+    <div id="formSection">
+        <div class="info-note">
+            <strong>Sovereign Setup Required:</strong> To maintain decentralized spam protection, you must provide your own <em>reCAPTCHA v3 (Score-based)</em> keys.
+            <br><br>
+            Generate keys at: <a href="https://www.google.com/recaptcha/admin/create" target="_blank" style="color: var(--navy); font-weight: bold;">Google Admin Console</a>
+        </div>
+
+        <input type="email" id="email" placeholder="Institutional Email (e.g. researcher@univ.edu)" class="input-field" required>
+
+        <input type="text" id="siteKey" placeholder="User reCAPTCHA Site Key" class="input-field" required>
+        <input type="text" id="secretKey" placeholder="User reCAPTCHA Secret Key" class="input-field" required>
+
+        <div style="text-align: left; margin: 15px 0;">
+            <label style="font-size: 11px; color: var(--slate); cursor: pointer; display: flex; gap: 8px; align-items: flex-start;">
+                <input type="checkbox" id="privacyConsent" style="margin-top: 2px;" required> 
+                <span>I verify that I have read and agree to the <strong>Sovereign Data Minimization Policy</strong>. I understand my email is hashed for identity resolution and inquiry text is never persisted.</span>
+            </label>
+        </div>
+
+        <button onclick="requestProvision()" class="btn">Initialize Engine Widget</button>
+    </div>
+
+    <div id="resultSection">
+        <span class="status-msg" id="statusMsg"></span>
+        <p style="font-size: 12px; color: var(--slate);">Use the code below to embed your secure contact engine on any institutional page:</p>
+        <div class="embed-box" id="embedCode"></div>
+
+        <button onclick="window.location.reload()" class="btn" style="background: var(--slate); margin-top: 20px;">Provision New Identity</button>
+    </div>
+</div>
+
+<script>
+    /**
+     * GLOBAL STATE
+     * Stores the Master Hub Site Key once retrieved from the server.
+     */
+    let HUB_MASTER_SITE_KEY = null;
+
+    /**
+     * INITIALIZATION: loadHubConfig
+     * Fetches the Hub's master reCAPTCHA site key from the Node.js environment.
+     * This prevents hard-coding and maintains sovereign security.
+     */
+    async function loadHubConfig() {
+        try {
+            const response = await fetch('/api/contact/hub-config');
+            const config = await response.json();
+            
+            if (!config.masterSiteKey) throw new Error("Master Site Key missing from environment.");
+            
+            HUB_MASTER_SITE_KEY = config.masterSiteKey;
+
+            // Dynamically inject the reCAPTCHA library using the fetched key
+            const script = document.createElement('script');
+            script.src = `https://www.google.com/recaptcha/api.js?render=${HUB_MASTER_SITE_KEY}`;
+            document.head.appendChild(script);
+            
+            console.log("Sovereign Security Handshake: Verified.");
+        } catch (err) {
+            console.error("Hub Infrastructure Error:", err);
+            alert("Security Error: Could not load Hub configuration.");
+        }
+    }
+
+    /**
+     * CORE LOGIC: requestProvision
+     * Orchestrates the verification handshake and the asynchronous API call.
+     */
+    async function requestProvision() {
+        const email = document.getElementById('email').value;
+        const siteKey = document.getElementById('siteKey').value;
+        const secretKey = document.getElementById('secretKey').value;
+        const consent = document.getElementById('privacyConsent').checked;
+
+        if (!email || !consent || !siteKey || !secretKey) {
+            return alert("All fields must be completed, and Policy Consent must be granted.");
+        }
+
+        if (!HUB_MASTER_SITE_KEY) return alert("System is still initializing. Please wait.");
+
+        grecaptcha.ready(function() {
+            grecaptcha.execute(HUB_MASTER_SITE_KEY, {action: 'provision'}).then(async (token) => {
+                try {
+                    const res = await fetch('/api/contact/provision', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            email, 
+                            siteKey, 
+                            secretKey, 
+                            privacyConsent: consent, 
+                            captchaToken: token 
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.error) throw new Error(data.error);
+
+                    document.getElementById('formSection').style.display = 'none';
+                    document.getElementById('resultSection').style.display = 'block';
+                    document.getElementById('statusMsg').innerText = data.status === 'existing' 
+                        ? "Existing Identity Found" 
+                        : "New Identity Successfully Provisioned";
+                    document.getElementById('embedCode').innerText = data.embedCode;
+
+                } catch (err) {
+                    console.error("Provisioning Error:", err);
+                    alert("System Error: " + err.message);
+                }
+            });
+        });
+    }
+
+    // Execute Hub Handshake on DOM Load
+    window.addEventListener('DOMContentLoaded', loadHubConfig);
+</script>
+
+</body>
+</html>
